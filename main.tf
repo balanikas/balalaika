@@ -3,7 +3,7 @@ terraform {
   cloud {
     organization = "balanikas"
     workspaces {
-      name = "learn-tfc-aws"
+      name = "balalaika"
     }
   }
 
