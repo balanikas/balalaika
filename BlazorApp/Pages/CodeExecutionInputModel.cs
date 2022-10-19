@@ -4,8 +4,8 @@ using System.ComponentModel.DataAnnotations;
 namespace BlazorApp.Pages;
 
 
-public class ExampleModel
+public class CodeExecutionInputModel
 {
     [Required]
-    public string? Code { get; set; }
+    public string Code { get; set; } = "";
 }

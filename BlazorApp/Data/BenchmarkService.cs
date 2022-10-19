@@ -1,6 +1,10 @@
 namespace BlazorApp.Data;
 
 using System.Diagnostics;
+using System.Text.Json;
+using Amazon.Runtime;
+using Amazon.SQS;
+using Amazon.SQS.Model;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 
@@ -24,8 +28,28 @@ public class BenchmarkService
             TimeTaken = watch.Elapsed
             
         };
-
+        await Post(result);
         return await Task.FromResult(result);
+    }
+
+    public async Task Post(BenchmarkResult payload)
+    {
+        
+        var client = new AmazonSQSClient(Amazon.RegionEndpoint.GetBySystemName("us-west-2"));
+        var request = new SendMessageRequest()
+        {
+            
+            MessageBody = JsonSerializer.Serialize(payload),
+            QueueUrl = "https://sqs.us-west-2.amazonaws.com/686788842590/compute-queue",
+        };
+
+        try{
+            var result = await client.SendMessageAsync(request);
+        }
+        catch(Exception e){
+            System.Console.WriteLine(e.Message);
+        }
+        
     }
 }
 

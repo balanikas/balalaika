@@ -1,9 +1,38 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+<PageTitle>code evaluation</PageTitle>
 
-<h1>Hello, world! 3</h1>
+@using BlazorApp.Data
+@inject BenchmarkService BenchmarkService
 
-Welcome to your new app.
+<h1>code evaluation</h1>
+<p>enter code and let it be evaluated</p>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<EditForm Model="@model" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputTextArea id="name" @bind-Value="model.Code" placeholder="System.Threading.Thread.Sleep(1000);"/>
+    <button type="submit">Submit</button>
+</EditForm>
+
+<p>execution took @result?.TimeTaken</p>
+
+@code {
+    private BenchmarkResult? result;
+    private CodeExecutionInputModel model = new();
+
+    private async Task HandleValidSubmit()
+    {
+        result = await BenchmarkService.Run(model.Code);
+       
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        model = new(){
+            Code = "System.Threading.Thread.Sleep(1000);"
+        };
+
+        await Task.CompletedTask;
+    }
+}
