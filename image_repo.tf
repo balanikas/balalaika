@@ -1,5 +1,5 @@
 resource "aws_ecr_repository" "balalaika-repository" {
-  name                 = "balalaika-repo"
+  name                 = var.ecr_repository
   image_tag_mutability = "MUTABLE"
 }
 

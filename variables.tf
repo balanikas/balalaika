@@ -1,5 +1,14 @@
-variable "instance_name" {
-  description = "Value of the Name tag for the EC2 instance"
+variable "aws_region" {
   type        = string
-  default     = "YoHeroMan"
+  default     = "us-west-2"
+}
+
+variable "ecs_log_group" {
+  type        = string
+  default     = "balalaika-log-group"
+}
+
+variable "ecr_repository" {
+  type        = string
+  default     = "balalaika-repo"
 }
