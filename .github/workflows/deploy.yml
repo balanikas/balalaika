@@ -38,3 +38,11 @@ jobs:
         
         docker build BlazorApp/ -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+    - name: Deploy to Amazon ECS
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        service: balalaika-app
+        cluster: ecs-cluster-for-balalaika
+        wait-for-service-stability: true
