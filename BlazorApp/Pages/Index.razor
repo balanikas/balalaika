@@ -12,51 +12,81 @@
 <EditForm Model="@model" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
-    <InputTextArea id="name" @bind-Value="model.Code" placeholder="System.Threading.Thread.Sleep(1000);"/>
+    <InputTextArea id="name" @bind-Value="model.Code" />
     <button type="submit">Submit</button>
 </EditForm>
 
-<p>execution id @result?.ExecutionId</p>
-<p>execution took @result?.TimeTaken</p>
 
+<p>execution id @result?.ExecutionId</p>
+<p>execution took @result?.TimeTaken.Milliseconds ms</p>
+
+<button @onclick="UpdateResult">
+    Update previous results
+</button>
+
+@if (executionResults == null)
+{
+    <div>loading...</div>
+}
+else
+{
     <table class="table" id="myTable">
-        <thead>
-            <tr>
-                <th>s3 object</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var r in executionResults)
+    <thead>
+        <tr>
+            <th>id</th>
+            <th>time taken (ms)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in executionResults)
             {
                 <tr>
-                    <td>@r</td>
+                    <td>@r.ExecutionId</td>
+                    <td>@r.TimeTaken</td>
                 </tr>
             }
         </tbody>
     </table>
+}
+
 
 @code {
     private BenchmarkResult? result;
     private CodeExecutionInputModel model = new();
-    private IEnumerable<string> executionResults = Enumerable.Empty<string>();
+    private IEnumerable<ExecutionResult>? executionResults;
 
-    private async Task HandleValidSubmit()
+    private async Task UpdateResult()
     {
-        result = await BenchmarkService.Run(model.Code);
-        var created = await ResultsRepository.CreateBucketAsync();
-        if(created){
-            await ResultsRepository.UploadResultAsync(result.ExecutionId.ToString(), result );
-        }
+        executionResults = null;
+        StateHasChanged();
+
         executionResults = await ResultsRepository.ListBucketContentsAsync();
 
     }
-    
+
+    private async Task HandleValidSubmit()
+    {
+
+        result = null;
+        StateHasChanged();
+        result = await BenchmarkService.Run(model.Code);
+        StateHasChanged();
+
+        var created = await ResultsRepository.CreateBucketAsync();
+        if (created)
+        {
+            await ResultsRepository.UploadResultAsync(result.ExecutionId.ToString(), result);
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        model = new(){
+        model = new()
+        {
             Code = "System.Threading.Thread.Sleep(1000);"
         };
 
-        executionResults = await ResultsRepository.ListBucketContentsAsync();
+        await Task.CompletedTask;
+
     }
 }

@@ -48,7 +48,7 @@ public class ResultsRepository
 
     public async Task<bool> UploadResultAsync(
         string objectName,
-        object data)
+        BenchmarkResult data)
     {
         var request = new PutObjectRequest
         {
@@ -68,15 +68,15 @@ public class ResultsRepository
         }
     }
 
-    public async Task<IEnumerable<string>> ListBucketContentsAsync()
+    public async Task<IEnumerable<ExecutionResult>> ListBucketContentsAsync()
     {
-        var results = new List<string>();
+        var results = new List<ExecutionResult>();
         try
         {
             var request = new ListObjectsV2Request
             {
                 BucketName = _options.S3BucketName,
-                MaxKeys = 5,
+                //MaxKeys = 5,
             };
 
             Console.WriteLine("--------------------------------------");
@@ -89,7 +89,13 @@ public class ResultsRepository
             {
                 response = await _client.ListObjectsV2Async(request);
 
-                results.AddRange(response.S3Objects.Select(x => $"{x.Key}"));
+                foreach(var x in response.S3Objects.OrderBy(x=> x.LastModified)){
+                    var o = await _client.GetObjectAsync(_options.S3BucketName, x.Key);
+                    
+                    var a = JsonSerializer.Deserialize<ExecutionResult>(o.ResponseStream);
+                    results.Add(a);
+                }
+                
                 // If the response is truncated, set the request ContinuationToken
                 // from the NextContinuationToken property of the response.
                 request.ContinuationToken = response.NextContinuationToken;
