@@ -73,9 +73,9 @@ resource "aws_sqs_queue" "compute-queue" {
 }
 
 resource "aws_sqs_queue_policy" "compute-queue-policy" {
-    queue_url = "${aws_sqs_queue.compute-queue.id}"
+  queue_url = aws_sqs_queue.compute-queue.id
 
-    policy = <<POLICY
+  policy = <<POLICY
 {
   "Version": "2012-10-17",
   "Id": "sqspolicy",
@@ -84,15 +84,85 @@ resource "aws_sqs_queue_policy" "compute-queue-policy" {
       "Sid": "First",
       "Effect": "Allow",
       "Principal": "*",
-      "Action": "sqs:SendMessage",
-      "Resource": "${aws_sqs_queue.compute-queue.arn}",
-      "Condition": {
-        "ArnEquals": {
-          "aws:SourceArn": "${aws_ecs_task_definition.balalaika-ecs-task-definition.arn}"
-        }
-      }
+      "Action": "sqs:*",
+      "Resource": "${aws_sqs_queue.compute-queue.arn}"
     }
   ]
 }
 POLICY
+}
+
+
+
+
+resource "aws_iam_role" "lambda_role" {
+  name               = "lambda_role"
+  assume_role_policy = <<EOF
+{
+ "Version": "2012-10-17",
+ "Statement": [
+   {
+     "Action": "sts:AssumeRole",
+     "Principal": {
+       "Service": "lambda.amazonaws.com"
+     },
+     "Effect": "Allow",
+     "Sid": ""
+   }
+ ]
+}
+EOF
+}
+
+resource "aws_iam_policy" "iam_policy_for_lambda" {
+
+  name        = "aws_iam_policy_for_lambda_role"
+  path        = "/"
+  description = "AWS IAM Policy for managing aws lambda role"
+  policy      = <<EOF
+{
+ "Version": "2012-10-17",
+ "Statement": [
+    {
+     "Action": [
+       "logs:CreateLogGroup",
+       "logs:CreateLogStream",
+       "logs:PutLogEvents"
+     ],
+     "Resource": "arn:aws:logs:*:*:*",
+     "Effect": "Allow"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+          "s3:*",
+          "s3-object-lambda:*"
+      ],
+      "Resource": "*"
+    }
+ ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.iam_policy_for_lambda.arn
+}
+
+
+resource "aws_lambda_function" "lambda_function" {
+  filename      = "${path.module}/src.zip"
+  function_name = "Lambda_Function"
+  role          = aws_iam_role.lambda_role.arn
+  handler       = "Lambda::Lambda.Function::FunctionHandler"
+  runtime       = "dotnet6"
+  depends_on    = [aws_iam_role_policy_attachment.attach_iam_policy_to_iam_role]
+}
+
+resource "aws_lambda_event_source_mapping" "event_source_mapping" {
+  event_source_arn = aws_sqs_queue.compute-queue.arn
+  enabled          = true
+  function_name    = aws_lambda_function.lambda_function.arn
+  batch_size       = 1
 }

@@ -73,10 +73,10 @@ else
         StateHasChanged();
 
         var created = await ResultsRepository.CreateBucketAsync();
-        if (created)
+        @* if (created)
         {
             await ResultsRepository.UploadResultAsync(result.ExecutionId.ToString(), result);
-        }
+        } *@
     }
 
     protected override async Task OnInitializedAsync()
