@@ -7,53 +7,60 @@ using Amazon.SQS;
 using Amazon.SQS.Model;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using Microsoft.Extensions.Options;
 
 public class BenchmarkService
 {
+    private readonly IAmazonSQS _client;
+    private readonly AppOptions _options;
+
+    public BenchmarkService(IAmazonSQS client, IOptions<AppOptions> options)
+    {
+        _client = client;
+        _options = options.Value;
+    }
+
     public async Task<BenchmarkResult> Run(string code)
     {
-        var options = ScriptOptions.Default.WithImports("System"); 
+        var options = ScriptOptions.Default.WithImports("System");
         Stopwatch watch = Stopwatch.StartNew();
-        try   {
+        try
+        {
             var evaluationResult = await CSharpScript.EvaluateAsync(code, options);
-            
+
         }
         catch (CompilationErrorException e)
         {
             Console.WriteLine(string.Join(Environment.NewLine, e.Diagnostics));
         }
 
-        var result = new BenchmarkResult{
+        var result = new BenchmarkResult
+        {
             ExecutionId = Guid.NewGuid(),
             TimeTaken = watch.Elapsed
-            
+
         };
-        await Post(result);
+        await PostToQueue(result);
         return await Task.FromResult(result);
     }
 
-    public async Task Post(BenchmarkResult payload)
+    public async Task PostToQueue(BenchmarkResult payload)
     {
-        
-        var client = new AmazonSQSClient(Amazon.RegionEndpoint.GetBySystemName("us-west-2"));
+        var queueUrl = await _client.GetQueueUrlAsync(_options.ComputeQueueName);
         var request = new SendMessageRequest()
         {
-            
             MessageBody = JsonSerializer.Serialize(payload),
-            QueueUrl = "https://sqs.us-west-2.amazonaws.com/686788842590/compute-queue",
+            QueueUrl = queueUrl.QueueUrl 
         };
 
-        try{
-            var result = await client.SendMessageAsync(request);
+        try
+        {
+            var result = await _client.SendMessageAsync(request);
         }
-        catch(Exception e){
+        catch (Exception e)
+        {
             System.Console.WriteLine(e.Message);
         }
-        
-    }
-}
 
-public class BenchmarkResult {
-    public Guid ExecutionId { get; set;}
-    public TimeSpan TimeTaken { get; set;}
+    }
 }

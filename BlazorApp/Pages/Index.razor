@@ -4,6 +4,7 @@
 
 @using BlazorApp.Data
 @inject BenchmarkService BenchmarkService
+@inject ResultsRepository ResultsRepository
 
 <h1>code evaluation</h1>
 <p>enter code and let it be evaluated</p>
@@ -15,16 +16,39 @@
     <button type="submit">Submit</button>
 </EditForm>
 
+<p>execution id @result?.ExecutionId</p>
 <p>execution took @result?.TimeTaken</p>
+
+    <table class="table" id="myTable">
+        <thead>
+            <tr>
+                <th>s3 object</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in executionResults)
+            {
+                <tr>
+                    <td>@r</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
 @code {
     private BenchmarkResult? result;
     private CodeExecutionInputModel model = new();
+    private IEnumerable<string> executionResults = Enumerable.Empty<string>();
 
     private async Task HandleValidSubmit()
     {
         result = await BenchmarkService.Run(model.Code);
-       
+        var created = await ResultsRepository.CreateBucketAsync();
+        if(created){
+            await ResultsRepository.UploadResultAsync(result.ExecutionId.ToString(), result );
+        }
+        executionResults = await ResultsRepository.ListBucketContentsAsync();
+
     }
     
     protected override async Task OnInitializedAsync()
@@ -33,6 +57,6 @@
             Code = "System.Threading.Thread.Sleep(1000);"
         };
 
-        await Task.CompletedTask;
+        executionResults = await ResultsRepository.ListBucketContentsAsync();
     }
 }

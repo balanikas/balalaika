@@ -43,6 +43,7 @@
         }
     ],
     "family": "ecs-task-definition-balalaika",
+    "taskRoleArn": "arn:aws:iam::686788842590:role/blazorToSqsRole",
     "executionRoleArn": "arn:aws:iam::686788842590:role/ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [],
