@@ -13,7 +13,7 @@ builder.Services.Configure<AppOptions>(builder.Configuration.GetSection("AppOpti
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddAWSService<IAmazonSQS>();
-builder.Services.AddSingleton<BenchmarkService>();
+builder.Services.AddSingleton<MessagingService>();
 builder.Services.AddSingleton<ResultsRepository>();
 
 Console.WriteLine(builder.Configuration.GetDebugView());

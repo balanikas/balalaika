@@ -3,28 +3,28 @@
 <PageTitle>code evaluation</PageTitle>
 
 @using BlazorApp.Data
-@inject BenchmarkService BenchmarkService
 @inject ResultsRepository ResultsRepository
+@inject MessagingService MessagingService
 
 <h1>code evaluation</h1>
 <p>enter code and let it be evaluated</p>
 
-<EditForm Model="@model" OnValidSubmit="@HandleValidSubmit">
+<EditForm Model="@_model" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
-    <InputTextArea id="name" @bind-Value="model.Code" />
+    <InputTextArea id="name" @bind-Value="_model.Code" />
     <button type="submit">Submit</button>
 </EditForm>
 
 
-<p>execution id @result?.ExecutionId</p>
-<p>execution took @result?.TimeTaken.Milliseconds ms</p>
+<p>execution id @_result?.ExecutionId</p>
+<p>code to execute: @_result?.Code</p>
 
 <button @onclick="UpdateResult">
     Update previous results
 </button>
 
-@if (executionResults == null)
+@if (_executionResults == null)
 {
     <div>loading...</div>
 }
@@ -35,14 +35,16 @@ else
         <tr>
             <th>id</th>
             <th>time taken (ms)</th>
+            <th>log</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var r in executionResults)
+        @foreach (var r in _executionResults)
             {
                 <tr>
                     <td>@r.ExecutionId</td>
                     <td>@r.TimeTaken</td>
+                    <td>@r.Log.Substring(0,30)</td>
                 </tr>
             }
         </tbody>
@@ -51,42 +53,41 @@ else
 
 
 @code {
-    private BenchmarkResult? result;
-    private CodeExecutionInputModel model = new();
-    private IEnumerable<ExecutionResult>? executionResults;
+    private ExecutionRequest? _result;
+    private CodeExecutionInputModel _model = new();
+    private IEnumerable<ExecutionResult>? _executionResults;
 
     private async Task UpdateResult()
     {
-        executionResults = null;
+        _executionResults = null;
         StateHasChanged();
 
-        executionResults = await ResultsRepository.ListBucketContentsAsync();
+        _executionResults = await ResultsRepository.ListBucketContentsAsync();
 
     }
 
     private async Task HandleValidSubmit()
     {
 
-        result = null;
-        StateHasChanged();
-        result = await BenchmarkService.Run(model.Code);
+        _result = null;
         StateHasChanged();
 
-        var created = await ResultsRepository.CreateBucketAsync();
-        @* if (created)
-        {
-            await ResultsRepository.UploadResultAsync(result.ExecutionId.ToString(), result);
-        } *@
+        var request = new ExecutionRequest {
+            ExecutionId = Guid.NewGuid(),
+            Code = _model.Code
+        };
+        await MessagingService.PostToQueue(request);
+
+        _result = request;
     }
 
     protected override async Task OnInitializedAsync()
     {
-        model = new()
+        _model = new()
         {
-            Code = "System.Threading.Thread.Sleep(1000);"
+            Code = @"System.Threading.Thread.Sleep(100);"
         };
 
         await Task.CompletedTask;
-
     }
 }

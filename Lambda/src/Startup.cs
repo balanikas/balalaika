@@ -7,20 +7,20 @@ namespace Lambda;
 
 public class Startup
 {
-    private readonly IConfigurationRoot Configuration;
+    private readonly IConfigurationRoot _configuration;
 
     public Startup()
     {
-        Configuration = new ConfigurationBuilder() // ConfigurationBuilder() method requires Microsoft.Extensions.Configuration NuGet package
-            .SetBasePath(Directory.GetCurrentDirectory())  // SetBasePath() method requires Microsoft.Extensions.Configuration.FileExtensions NuGet package
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true) // AddJsonFile() method requires Microsoft.Extensions.Configuration.Json NuGet package
-            .AddEnvironmentVariables() // AddEnvironmentVariables() method requires Microsoft.Extensions.Configuration.EnvironmentVariables NuGet package
+        _configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddEnvironmentVariables()
             .Build();
     }
 
     public IServiceProvider ConfigureServices()
     {
-        var services = new ServiceCollection(); 
+        var services = new ServiceCollection();
         ConfigureLoggingAndConfigurations(services);
         ConfigureApplicationServices(services);
         IServiceProvider provider = services.BuildServiceProvider();
@@ -30,14 +30,18 @@ public class Startup
 
     private void ConfigureLoggingAndConfigurations(ServiceCollection services)
     {
-        services.AddSingleton<IConfiguration>(Configuration);
+        services.AddSingleton<IConfiguration>(_configuration);
     }
 
     private void ConfigureApplicationServices(ServiceCollection services)
     {
-        AWSOptions awsOptions = Configuration.GetAWSOptions();
-        services.AddDefaultAWSOptions(awsOptions);
+        services.AddDefaultAWSOptions(_configuration.GetAWSOptions());
         services.AddAWSService<IAmazonS3>();
+
+        var appOptions = new AppOptions();
+        _configuration.GetSection("AppOptions").Bind(appOptions);
+        services.AddSingleton(appOptions);
         services.AddSingleton<ResultsRepository>();
+        services.AddSingleton<BenchmarkService>();
     }
 }
