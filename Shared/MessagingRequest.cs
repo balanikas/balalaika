@@ -1,6 +1,6 @@
-namespace Lambda;
+namespace Shared;
 
-public class Message
+public class MessagingRequest
 {
     public Guid ExecutionId { get; set; }
     public string Url { get; set; }

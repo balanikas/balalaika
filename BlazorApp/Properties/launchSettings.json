@@ -10,7 +10,6 @@
   "profiles": {
     "BlazorApp": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
       "launchBrowser": true,
       "applicationUrl": "http://localhost:5045",
       "environmentVariables": {

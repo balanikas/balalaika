@@ -1,93 +1,185 @@
 ﻿@page "/"
+@using global::Shared
 
-<PageTitle>code evaluation</PageTitle>
+<PageTitle>sentiment analyzer</PageTitle>
 
-@using BlazorApp.Data
+
 @inject ResultsRepository ResultsRepository
 @inject MessagingService MessagingService
+@inject SentimentAnalyzer SentimentAnalyzer
 
-<h1>code evaluation</h1>
-<p>enter code and let it be evaluated</p>
+<h1>sentiment analyzer</h1>
+<p>enter a url and let it be analyzed for sentiment</p>
 
-<EditForm Model="@_model" OnValidSubmit="@HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    <InputTextArea id="name" @bind-Value="_model.Code" />
-    <button type="submit">Submit</button>
+<EditForm  Model="@WikipediaInputModel" OnValidSubmit="@HandleWikipediaAnalysis">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+    <RadzenCard class="rz-shadow-8" >
+        <div cclass="row" >
+            <RadzenTextBox @bind-Value="WikipediaInputModel.WikiUrl" Disabled class="col-3"/>
+            <RadzenTextBox  Placeholder="Blazor" @bind-Value="WikipediaInputModel.UrlSegment" class="col-3"/>
+            <RadzenButton Text="Analyze" ButtonStyle="ButtonStyle.Primary" type="submit" class="col-2"/>
+        </div>
+
+    </RadzenCard>
 </EditForm>
+<br/>
+<EditForm Model="@RedditInputModel" OnValidSubmit="@HandleRedditAnalysis">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+    <RadzenCard class="rz-shadow-8">
+        <div cclass="row">
+            <RadzenTextBox @bind-Value="RedditInputModel.Url" Disabled class="col-3"/>
+            <RadzenTextBox Placeholder="" @bind-Value="RedditInputModel.UrlSegment" class="col-3"/>
+            <RadzenButton Text="Analyze" ButtonStyle="ButtonStyle.Primary" type="submit" class="col-2"/>
+        </div>
 
+    </RadzenCard>
+</EditForm>
+<br/>
+ <RadzenButton Click="@OnLoadClick" Text="Load results" ButtonStyle="ButtonStyle.Primary" />
 
-<p>execution id @_result?.ExecutionId</p>
-<p>code to execute: @_result?.Code</p>
-
-<button @onclick="UpdateResult">
-    Update previous results
-</button>
-
-@if (_executionResults == null)
-{
-    <div>loading...</div>
-}
-else
-{
-    <table class="table" id="myTable">
-    <thead>
-        <tr>
-            <th>id</th>
-            <th>time taken (ms)</th>
-            <th>log</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var r in _executionResults)
-            {
-                <tr>
-                    <td>@r.ExecutionId</td>
-                    <td>@r.TimeTaken</td>
-                    <td>@r.Log.Substring(0,30)</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
+<RadzenDataList WrapItems="true" Data="@_sentiments" TItem="Result" PageSize="1">
+    <Template Context="sentiment">
+        <RadzenCard Style="width: 100%; padding: 0; overflow: hidden;" class="rz-shadow-8">
+            <div class="container">
+                <div class="row"
+                     style="margin-left: calc(var(--bs-gutter-x) * -1); margin-right: calc(var(--bs-gutter-x) * -1)">
+                    <div class="col-md-2 p-3">
+                        <RadzenText TextStyle="TextStyle.H4" TagName="TagName.H5" Class="rz-color-primary">
+                            @(sentiment.Sentiment)
+                        </RadzenText>
+                    </div>
+                    <div class="col-lg-7 p-3">
+                        <div class="row d-flex">
+                            <div class="col-md-6 col-lg-2">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="mb-0">
+                                    Negative
+                                </RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2" class="mb-sm-2 mb-lg-0">
+                                    @(sentiment.SentimentScore?.Negative.ToString("0.00")) confidence
+                                </RadzenText>
+                            </div>
+                            <div class="col-md-6 col-lg-2">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="mb-0">
+                                    Neutral
+                                </RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2" class="mb-sm-2 mb-lg-0">
+                                    @(sentiment.SentimentScore?.Neutral.ToString("0.00")) confidence
+                                </RadzenText>
+                            </div>
+                            <div class="col-md-6 col-lg-2">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="mb-0">
+                                    Positive
+                                </RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2" class="mb-sm-2 mb-lg-0">
+                                    @(sentiment.SentimentScore?.Positive.ToString("0.00")) confidence
+                                </RadzenText>
+                            </div>
+                            <div class="col-md-6 col-lg-2">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="mb-0">
+                                    Mixed
+                                </RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2" class="mb-sm-2 mb-lg-0">
+                                    @(sentiment.SentimentScore?.Mixed.ToString("0.00")) confidence
+                                </RadzenText>
+                            </div>
+                            <div class="col-md-6 col-lg-2">
+                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" class="mb-0">
+                                    Timestamp
+                                </RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2" class="mb-sm-2 mb-lg-0">
+                                    @(sentiment.TimeStamp)
+                                </RadzenText>
+                            </div>                            
+                            <div class="col-md-6 col-lg-2">
+                           
+                         
+                                <RadzenLink Path="@(sentiment.Url)" Text="@(sentiment.Url)" target="_blank" />
+                            
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </RadzenCard>
+    </Template>
+</RadzenDataList>
+<RadzenCard Style="width: 100%; padding: 0; overflow: hidden;" class="rz-shadow-8">
+    <RadzenText>@_sentiment.Text</RadzenText>
+</RadzenCard>
 
 @code {
-    private ExecutionRequest? _result;
-    private CodeExecutionInputModel _model = new();
-    private IEnumerable<ExecutionResult>? _executionResults;
+    private SentimentResult _sentiment = SentimentResult.Empty;
+    private IEnumerable<Result> _sentiments = Enumerable.Empty<Result>();
 
-    private async Task UpdateResult()
+    [Parameter]
+    public WikipediaInputModel WikipediaInputModel { get; set; } = new();
+
+    [Parameter]
+    public RedditInputModel RedditInputModel { get; set; } = new();
+
+    private async Task HandleWikipediaAnalysis()
     {
-        _executionResults = null;
-        StateHasChanged();
-
-        _executionResults = await ResultsRepository.ListBucketContentsAsync();
-
-    }
-
-    private async Task HandleValidSubmit()
-    {
-
-        _result = null;
-        StateHasChanged();
-
-        var request = new ExecutionRequest {
-            ExecutionId = Guid.NewGuid(),
-            Code = _model.Code
+        ResetUi();
+        var request = new MessagingRequest
+        {
+            ScraperType = ScraperType.Wikipedia.ToString(),
+            Url = WikipediaInputModel.WikiUrl + WikipediaInputModel.UrlSegment,
+            ExecutionId = Guid.NewGuid()
         };
         await MessagingService.PostToQueue(request);
+    }
 
-        _result = request;
+    private async Task HandleRedditAnalysis()
+    {
+        ResetUi();
+        var request = new MessagingRequest
+        {
+            ScraperType = ScraperType.Reddit.ToString(),
+            Url = RedditInputModel.Url + RedditInputModel.UrlSegment,
+            ExecutionId = Guid.NewGuid()
+        };
+        await MessagingService.PostToQueue(request);
+    }
+
+    private void ResetUi()
+    {
+        _sentiment = SentimentResult.Empty;
+        _sentiments = Enumerable.Empty<Result>();
+        StateHasChanged();
+    }
+    
+    private async Task PostToQueue()
+    {
+        ResetUi();
+        var request = new MessagingRequest
+        {
+            ScraperType = ScraperType.Reddit.ToString(),
+            Url = RedditInputModel.Url + RedditInputModel.UrlSegment,
+            ExecutionId = Guid.NewGuid(),
+            TimeStamp = DateTime.UtcNow
+        };
+        await MessagingService.PostToQueue(request);
     }
 
     protected override async Task OnInitializedAsync()
     {
-        _model = new()
+        WikipediaInputModel = new WikipediaInputModel
         {
-            Code = @"System.Threading.Thread.Sleep(100);"
+            UrlSegment = "Blazor"
         };
-
+        RedditInputModel = new RedditInputModel
+        {
+            UrlSegment = "r/programming/comments/xsi3kh/atlassian_to_cease_all_operations_in_russia/"
+        };
         await Task.CompletedTask;
     }
+
+    private async Task OnLoadClick()
+    {
+        ResetUi();
+        _sentiments = await ResultsRepository.List<Result>();
+    }
+
 }

@@ -6,9 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SQS" Version="3.7.2.120" />
-    <PackageReference Include="AWSSDK.S3" Version="3.7.10" />
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.2" />
+
+    <PackageReference Include="Radzen.Blazor" Version="4.1.13" />
+
   </ItemGroup>
- 
+
+  <ItemGroup>
+    <ProjectReference Include="..\SentimentAnalysis\SentimentAnalysis.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Shared\Shared.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

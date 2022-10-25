@@ -1,7 +1,7 @@
-using Amazon.Extensions.NETCore.Setup;
-using Amazon.S3;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SentimentAnalysis;
+using Shared;
 
 namespace Lambda;
 
@@ -13,7 +13,7 @@ public class Startup
     {
         _configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.json", false, true)
             .AddEnvironmentVariables()
             .Build();
     }
@@ -36,12 +36,11 @@ public class Startup
     private void ConfigureApplicationServices(ServiceCollection services)
     {
         services.AddDefaultAWSOptions(_configuration.GetAWSOptions());
-        services.AddAWSService<IAmazonS3>();
 
         var appOptions = new AppOptions();
         _configuration.GetSection("AppOptions").Bind(appOptions);
         services.AddSingleton(appOptions);
-        services.AddSingleton<ResultsRepository>();
-        services.AddSingleton<BenchmarkService>();
+        services.AddSharedServices();
+        services.AddSentimentAnalysisServices();
     }
 }

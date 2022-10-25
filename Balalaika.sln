@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SentimentAnalysis", "SentimentAnalysis\SentimentAnalysis.csproj", "{39EFCED9-D58C-4F91-9518-02901B3A03DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApp", "BlazorApp\BlazorApp.csproj", "{FDB0AA89-9E94-43AA-8B14-2849826FCA12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{B87E65B1-70E2-4060-BDFD-1498C49F0F83}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lambda", "Lambda", "{D8C02AE3-E5AA-4996-A894-D764CF161020}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lambda", "Lambda\src\Lambda.csproj", "{F7440EDB-5F4A-43FE-B8EF-F5DDC77227AE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{39EFCED9-D58C-4F91-9518-02901B3A03DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39EFCED9-D58C-4F91-9518-02901B3A03DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39EFCED9-D58C-4F91-9518-02901B3A03DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39EFCED9-D58C-4F91-9518-02901B3A03DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDB0AA89-9E94-43AA-8B14-2849826FCA12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDB0AA89-9E94-43AA-8B14-2849826FCA12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDB0AA89-9E94-43AA-8B14-2849826FCA12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDB0AA89-9E94-43AA-8B14-2849826FCA12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B87E65B1-70E2-4060-BDFD-1498C49F0F83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B87E65B1-70E2-4060-BDFD-1498C49F0F83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B87E65B1-70E2-4060-BDFD-1498C49F0F83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B87E65B1-70E2-4060-BDFD-1498C49F0F83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7440EDB-5F4A-43FE-B8EF-F5DDC77227AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7440EDB-5F4A-43FE-B8EF-F5DDC77227AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7440EDB-5F4A-43FE-B8EF-F5DDC77227AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7440EDB-5F4A-43FE-B8EF-F5DDC77227AE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F7440EDB-5F4A-43FE-B8EF-F5DDC77227AE} = {D8C02AE3-E5AA-4996-A894-D764CF161020}
+	EndGlobalSection
+EndGlobal
